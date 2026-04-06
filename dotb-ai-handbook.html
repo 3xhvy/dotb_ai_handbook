@@ -1,0 +1,2072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOTB — AI Integration Handbook</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0f;
+    --bg2: #161618;
+    --bg3: #1e1e21;
+    --bg4: #26262a;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #f0efe8;
+    --text2: #9a998f;
+    --text3: #5a5955;
+    --accent: #c8f564;
+    --accent2: #7af0c8;
+    --accent3: #f0a05a;
+    --accent4: #f06464;
+    --accent5: #a08af0;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --serif: 'Instrument Serif', serif;
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── LAYOUT ── */
+  .shell { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    transition: transform .3s ease;
+  }
+  .sidebar-logo {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .logo-title {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  .sidebar-search {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .search-wrap {
+    position: relative;
+  }
+  .search-wrap input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 8px 12px 8px 32px;
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--text);
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap input::placeholder { color: var(--text3); }
+  .search-icon {
+    position: absolute;
+    left: 10px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    font-size: 12px;
+  }
+
+  .sidebar-nav { padding: 10px 0; flex: 1; }
+  .nav-section-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 12px 20px 4px;
+  }
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 20px;
+    font-size: 12.5px;
+    color: var(--text2);
+    text-decoration: none;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: color .15s, border-color .15s, background .15s;
+  }
+  .nav-link:hover { color: var(--text); background: var(--bg3); }
+  .nav-link.active { color: var(--accent); border-left-color: var(--accent); background: rgba(200,245,100,.05); }
+  .nav-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: 240px;
+    flex: 1;
+    max-width: 820px;
+    padding: 48px 40px 120px;
+  }
+
+  /* ── MOBILE TOGGLE ── */
+  .menu-btn {
+    display: none;
+    position: fixed;
+    top: 16px; left: 16px;
+    z-index: 200;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    color: var(--text);
+    font-size: 16px;
+  }
+
+  /* ── SEARCH RESULTS ── */
+  #search-results {
+    position: fixed;
+    top: 0; left: 240px; right: 0;
+    background: rgba(14,14,15,.96);
+    backdrop-filter: blur(8px);
+    z-index: 300;
+    padding: 60px 40px 40px;
+    display: none;
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+  #search-results.visible { display: block; }
+  .sr-close {
+    position: absolute;
+    top: 20px; right: 30px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .sr-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .sr-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .sr-item:hover { border-color: var(--accent); }
+  .sr-item-section { font-family: var(--mono); font-size: 10px; color: var(--accent); margin-bottom: 4px; }
+  .sr-item-title { font-size: 14px; font-weight: 500; color: var(--text); }
+  .sr-item-snippet { font-size: 12px; color: var(--text2); margin-top: 2px; line-height: 1.5; }
+  mark { background: rgba(200,245,100,.25); color: var(--accent); border-radius: 2px; padding: 0 2px; }
+
+  /* ── SECTION COMMON ── */
+  .section { margin-bottom: 80px; }
+  .section-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .section-lead {
+    font-size: 15px;
+    color: var(--text2);
+    line-height: 1.8;
+    max-width: 620px;
+    margin-bottom: 32px;
+    border-left: 2px solid var(--border2);
+    padding-left: 16px;
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 60px 0;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 0 0 60px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 60px;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(200,245,100,.1);
+    border: 1px solid rgba(200,245,100,.2);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .hero-h1 {
+    font-family: var(--serif);
+    font-size: clamp(36px,5vw,56px);
+    font-style: italic;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+  .hero-h1 span { color: var(--accent); }
+  .hero-sub {
+    font-size: 16px;
+    color: var(--text2);
+    max-width: 560px;
+    line-height: 1.8;
+    margin-bottom: 32px;
+  }
+  .hero-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .hstat {
+    text-align: center;
+    padding: 14px 20px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .hstat-n { font-family: var(--mono); font-size: 24px; color: var(--accent); font-weight: 500; }
+  .hstat-l { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* ── PROBLEM CARDS ── */
+  .problem-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .problem-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    transition: border-color .2s, transform .2s;
+  }
+  .problem-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .pc-icon { font-size: 20px; margin-bottom: 8px; }
+  .pc-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .pc-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .insight-box {
+    background: rgba(200,245,100,.06);
+    border: 1px solid rgba(200,245,100,.15);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    font-size: 14px;
+    color: var(--text2);
+    font-style: italic;
+  }
+  .insight-box strong { color: var(--accent); font-style: normal; }
+
+  /* ── PPE FRAMEWORK ── */
+  .ppe-flow {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    gap: 0;
+    align-items: start;
+    margin-bottom: 32px;
+  }
+  .ppe-step {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    transition: border-color .2s;
+  }
+  .ppe-step:hover { border-color: var(--border2); }
+  .ppe-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .1em;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .ppe-label {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .ppe-label.p { color: var(--accent); }
+  .ppe-label.pl { color: var(--accent2); }
+  .ppe-label.e { color: var(--accent3); }
+  .ppe-items { list-style: none; }
+  .ppe-items li {
+    font-size: 12.5px;
+    color: var(--text2);
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 6px;
+  }
+  .ppe-items li:last-child { border-bottom: none; }
+  .ppe-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    color: var(--text3);
+    font-size: 18px;
+    padding-top: 48px;
+  }
+
+  /* ── WORKFLOW STEPS (numbered) ── */
+  .workflow-steps { display: flex; flex-direction: column; gap: 2px; margin-bottom: 28px; }
+  .ws {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 16px;
+    align-items: start;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .ws:last-child { border-bottom: none; }
+  .ws-num {
+    width: 32px; height: 32px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    flex-shrink: 0;
+    transition: background .2s, color .2s;
+  }
+  .ws:hover .ws-num, .ws.open .ws-num {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+  .ws-body {}
+  .ws-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .ws-chevron {
+    font-size: 11px;
+    color: var(--text3);
+    transition: transform .2s;
+  }
+  .ws.open .ws-chevron { transform: rotate(180deg); }
+  .ws-detail {
+    display: none;
+    margin-top: 10px;
+  }
+  .ws.open .ws-detail { display: block; }
+  .ws-desc { font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 10px; }
+  .ws-code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent2);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .ws-tip {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--accent3);
+    font-style: italic;
+    display: flex;
+    gap: 6px;
+  }
+
+  /* ── PROMPT EXAMPLES ── */
+  .prompt-tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .ptab {
+    padding: 5px 12px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all .15s;
+    font-family: var(--mono);
+  }
+  .ptab:hover { border-color: var(--border2); color: var(--text); }
+  .ptab.active { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 500; }
+  .prompt-panels .ppanel { display: none; }
+  .prompt-panels .ppanel.active { display: block; }
+  .prompt-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 16px;
+    transition: border-color .2s;
+  }
+  .prompt-card:hover { border-color: var(--border2); }
+  .pc-head {
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .pc-meta { display: flex; align-items: center; gap: 8px; }
+  .pc-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .tag-sugar { background: rgba(160,138,240,.15); color: var(--accent5); }
+  .tag-sql { background: rgba(122,240,200,.1); color: var(--accent2); }
+  .tag-php { background: rgba(240,160,90,.1); color: var(--accent3); }
+  .tag-generic { background: rgba(200,245,100,.1); color: var(--accent); }
+  .tag-plan { background: rgba(240,100,100,.1); color: var(--accent4); }
+  .pc-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .copy-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 4px 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 5px;
+    color: var(--text2);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .15s;
+    flex-shrink: 0;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .copy-btn.copied { border-color: var(--accent2); color: var(--accent2); }
+  .pc-body { padding: 0; }
+  .pc-prompt {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: #b8ddb8;
+    line-height: 1.75;
+    padding: 16px 18px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .pc-why {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+  .pc-why strong { color: var(--text); }
+
+  /* ── CASE STUDY ── */
+  .case-study {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .cs-header {
+    padding: 16px 20px;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cs-header:hover { background: var(--bg4); }
+  .cs-badge { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 2px; }
+  .cs-title { font-size: 15px; font-weight: 500; color: var(--text); }
+  .cs-chevron { color: var(--text3); font-size: 12px; transition: transform .2s; }
+  .case-study.open .cs-chevron { transform: rotate(180deg); }
+  .cs-body { display: none; }
+  .case-study.open .cs-body { display: block; }
+
+  .cs-phase {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 16px;
+  }
+  .cs-phase:last-child { border-bottom: none; }
+  .cs-phase-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    padding-top: 2px;
+  }
+  .phase-prompt { color: var(--accent); }
+  .phase-plan { color: var(--accent2); }
+  .phase-execute { color: var(--accent3); }
+  .phase-verify { color: var(--accent4); }
+  .cs-phase-content { font-size: 13px; color: var(--text2); line-height: 1.7; }
+  .cs-phase-code {
+    margin-top: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--accent2);
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+  .cs-lesson {
+    padding: 12px 16px;
+    background: rgba(200,245,100,.05);
+    border-top: 1px solid rgba(200,245,100,.1);
+    font-size: 12px;
+    color: var(--accent);
+    font-style: italic;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  /* ── DO / DON'T ── */
+  .dodo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .do-col, .dont-col {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .col-header {
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .do-col .col-header { background: rgba(122,240,200,.06); color: var(--accent2); }
+  .dont-col .col-header { background: rgba(240,100,100,.06); color: var(--accent4); }
+  .dd-item {
+    padding: 10px 16px;
+    font-size: 12.5px;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    line-height: 1.55;
+    transition: background .15s;
+  }
+  .dd-item:last-child { border-bottom: none; }
+  .dd-item:hover { background: var(--bg3); }
+  .dd-icon { flex-shrink: 0; margin-top: 2px; font-size: 12px; }
+  .do-col .dd-icon { color: var(--accent2); }
+  .dont-col .dd-icon { color: var(--accent4); }
+
+  /* ── TOOL CARDS ── */
+  .tool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .tool-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    transition: border-color .2s, transform .2s;
+  }
+  .tool-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+  .tc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .tc-name { font-size: 15px; font-weight: 600; color: var(--text); }
+  .tc-price {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  .tc-price.free { background: rgba(122,240,200,.1); color: var(--accent2); }
+  .tc-price.paid { background: rgba(240,160,90,.1); color: var(--accent3); }
+  .tc-task {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .tc-desc { font-size: 12.5px; color: var(--text2); line-height: 1.55; margin-bottom: 12px; }
+  .tc-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .tc-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 6px;
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    color: var(--text3);
+    letter-spacing: .06em;
+  }
+
+  /* ── VERIFICATION CHECKLIST ── */
+  .vchecklist { }
+  .vc-group { margin-bottom: 24px; }
+  .vc-group-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .vc-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: opacity .15s;
+  }
+  .vc-item:last-child { border-bottom: none; }
+  .vc-box {
+    width: 18px; height: 18px;
+    border: 1.5px solid var(--border2);
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s, border-color .15s;
+  }
+  .vc-item.done .vc-box { background: var(--accent); border-color: var(--accent); }
+  .vc-check { display: none; font-size: 10px; color: #000; font-weight: 700; }
+  .vc-item.done .vc-check { display: block; }
+  .vc-text { font-size: 13px; color: var(--text); line-height: 1.55; }
+  .vc-item.done .vc-text { color: var(--text3); text-decoration: line-through; }
+  .vc-note { font-size: 11px; color: var(--text3); margin-top: 2px; font-style: italic; }
+  .progress-track {
+    background: var(--bg3);
+    border-radius: 4px;
+    height: 6px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width .3s ease;
+  }
+  .progress-label { font-size: 12px; color: var(--text3); margin-bottom: 6px; }
+
+  /* ── GLOSSARY / KEYWORDS ── */
+  .kw-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+  }
+  .kw-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    transition: border-color .2s;
+  }
+  .kw-card:hover { border-color: var(--border2); }
+  .kw-term {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .kw-def { font-size: 12.5px; color: var(--text2); line-height: 1.55; margin-bottom: 6px; }
+  .kw-links { display: flex; gap: 6px; flex-wrap: wrap; }
+  .kw-link {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 6px;
+    transition: color .15s, border-color .15s;
+  }
+  .kw-link:hover { color: var(--accent2); border-color: var(--accent2); }
+
+  /* ── FAILURE CARDS ── */
+  .fail-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent4);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    transition: border-color .2s;
+  }
+  .fail-card:hover { border-color: rgba(240,100,100,.4); }
+  .fail-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; display: flex; gap: 8px; align-items: center; }
+  .fail-body { font-size: 12.5px; color: var(--text2); line-height: 1.65; margin-bottom: 10px; }
+  .fail-lesson {
+    font-size: 12px;
+    color: var(--accent2);
+    font-style: italic;
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+  }
+
+  /* ── QUICK REF ── */
+  .qref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .qref-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .qref-label { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+  .qref-text { font-size: 12.5px; color: var(--text2); line-height: 1.55; }
+
+  /* ── SCROLLSPY ── */
+  .section { scroll-margin-top: 24px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; padding: 60px 20px 100px; }
+    .menu-btn { display: block; }
+    #search-results { left: 0; padding: 60px 20px 40px; }
+    .ppe-flow { grid-template-columns: 1fr; }
+    .ppe-arrow { display: none; }
+    .dodo { grid-template-columns: 1fr; }
+    .cs-phase { grid-template-columns: 1fr; }
+    .hero-stats { gap: 10px; }
+  }
+  @media (max-width: 480px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .kw-grid { grid-template-columns: 1fr; }
+    .qref-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ── ANIMATIONS ── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── SCROLL OVERLAY ── */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 90;
+  }
+  .overlay.visible { display: block; }
+</style>
+</head>
+<body>
+
+<button class="menu-btn" id="menuBtn" onclick="toggleMenu()">☰</button>
+<div class="overlay" id="overlay" onclick="closeMenu()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-tag">DOTB · Dev Team</div>
+    <div class="logo-title">AI Integration<br>Handbook</div>
+    <div class="logo-sub">by hohoanghvy</div>
+  </div>
+  <div class="sidebar-search">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="sideSearch" placeholder="Search topics, keywords…" oninput="handleSearch(this.value)">
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Getting started</div>
+    <a class="nav-link" onclick="scrollToSection('why')"><span class="nav-dot"></span>Why AI?</a>
+    <a class="nav-link" onclick="scrollToSection('problems')"><span class="nav-dot"></span>Our Problems</a>
+    <div class="nav-section-label">Core Framework</div>
+    <a class="nav-link" onclick="scrollToSection('ppe')"><span class="nav-dot"></span>Prompt → Plan → Execute</a>
+    <a class="nav-link" onclick="scrollToSection('workflow')"><span class="nav-dot"></span>Daily Workflow</a>
+    <div class="nav-section-label">Hands-on</div>
+    <a class="nav-link" onclick="scrollToSection('prompts')"><span class="nav-dot"></span>Prompt Library</a>
+    <a class="nav-link" onclick="scrollToSection('casestudy')"><span class="nav-dot"></span>Case Study</a>
+    <a class="nav-link" onclick="scrollToSection('dodo')"><span class="nav-dot"></span>Do & Don't</a>
+    <div class="nav-section-label">Reference</div>
+    <a class="nav-link" onclick="scrollToSection('tools')"><span class="nav-dot"></span>Tool Glossary</a>
+    <a class="nav-link" onclick="scrollToSection('verify')"><span class="nav-dot"></span>Verification Checklist</a>
+    <a class="nav-link" onclick="scrollToSection('fails')"><span class="nav-dot"></span>When AI Fails</a>
+    <a class="nav-link" onclick="scrollToSection('keywords')"><span class="nav-dot"></span>Keyword Index</a>
+  </nav>
+  <div class="sidebar-footer">
+    DOTB · Internal use only<br>v1.0 · April 2025
+  </div>
+</aside>
+
+<!-- SEARCH RESULTS OVERLAY -->
+<div id="search-results">
+  <button class="sr-close" onclick="closeSearch()">✕ Close</button>
+  <div class="sr-title" id="sr-title">Results</div>
+  <div id="sr-list"></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero fade-in section" id="why">
+    <div class="hero-badge"><span class="hero-badge-dot"></span>Internal Guide · Dev Team</div>
+    <h1 class="hero-h1">Use AI to build<br><span>faster, not blindly.</span></h1>
+    <p class="hero-sub">A practical handbook for DOTB developers. Learn when, how, and why to use AI in your engineering workflow — with real examples from our SugarCRM stack.</p>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-n">3</div><div class="hstat-l">Tools to master</div></div>
+      <div class="hstat"><div class="hstat-n">1</div><div class="hstat-l">Core framework</div></div>
+      <div class="hstat"><div class="hstat-n">12+</div><div class="hstat-l">Prompt templates</div></div>
+      <div class="hstat"><div class="hstat-n">5</div><div class="hstat-l">Failure patterns</div></div>
+    </div>
+  </div>
+
+  <!-- CORE IDEA BOX -->
+  <div class="insight-box fade-in" style="margin-bottom:60px">
+    <strong>The core idea:</strong> AI won't replace your thinking. It replaces your typing and Googling. Your job is to think clearly, prompt precisely, and always verify what comes back. <strong>Accelerate thinking — don't skip it.</strong>
+  </div>
+
+  <!-- OUR PROBLEMS -->
+  <div class="section fade-in" id="problems">
+    <div class="section-eyebrow">01 · Context</div>
+    <h2 class="section-title">Why we need this</h2>
+    <p class="section-lead">These are the real friction points slowing down our team. AI doesn't solve all of them — but it removes most of the repetitive, time-consuming parts.</p>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <div class="pc-icon">⏱</div>
+        <div class="pc-title">Legacy debugging</div>
+        <div class="pc-desc">Hours lost reading SugarCRM customizations written 3+ years ago with no documentation.</div>
+      </div>
+      <div class="problem-card">
+        <div class="pc-icon">🔁</div>
+        <div class="pc-title">Repetitive boilerplate</div>
+        <div class="pc-desc">CRUD endpoints, validation logic, API wrappers — all written from scratch every time.</div>
+      </div>
+      <div class="problem-card">
+        <div class="pc-icon">🐢</div>
+        <div class="pc-title">Slow onboarding</div>
+        <div class="pc-desc">New devs spend weeks just understanding the system before contributing.</div>
+      </div>
+      <div class="problem-card">
+        <div class="pc-icon">📭</div>
+        <div class="pc-title">Missing documentation</div>
+        <div class="pc-desc">Business logic lives in developer heads, not in files. Knowledge is lost when people leave.</div>
+      </div>
+    </div>
+    <div class="insight-box">
+      We spend more time <strong>figuring things out</strong> than actually building. AI compresses the figuring-out phase dramatically.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PPE FRAMEWORK -->
+  <div class="section fade-in" id="ppe">
+    <div class="section-eyebrow">02 · Core Framework</div>
+    <h2 class="section-title">Prompt → Plan → Execute</h2>
+    <p class="section-lead">Every AI-assisted task should follow this three-phase flow. Skipping phases — especially Plan — is how things go wrong. This framework applies to a 10-minute bug fix and a 2-week feature equally.</p>
+
+    <div class="ppe-flow">
+      <div class="ppe-step">
+        <div class="ppe-num">Phase 01</div>
+        <div class="ppe-label p">Prompt</div>
+        <ul class="ppe-items">
+          <li><span>→</span> Define the problem clearly</li>
+          <li><span>→</span> Include context + constraints</li>
+          <li><span>→</span> State what NOT to change</li>
+          <li><span>→</span> Include real code/errors</li>
+          <li><span>→</span> Choose the right tool</li>
+        </ul>
+      </div>
+      <div class="ppe-arrow">→</div>
+      <div class="ppe-step">
+        <div class="ppe-num">Phase 02</div>
+        <div class="ppe-label pl">Plan</div>
+        <ul class="ppe-items">
+          <li><span>→</span> Ask for approaches first</li>
+          <li><span>→</span> Evaluate trade-offs</li>
+          <li><span>→</span> Correct AI's assumptions</li>
+          <li><span>→</span> Split into phases</li>
+          <li><span>→</span> Align before coding</li>
+        </ul>
+      </div>
+      <div class="ppe-arrow">→</div>
+      <div class="ppe-step">
+        <div class="ppe-num">Phase 03</div>
+        <div class="ppe-label e">Execute</div>
+        <ul class="ppe-items">
+          <li><span>→</span> Generate small chunks</li>
+          <li><span>→</span> Review each piece</li>
+          <li><span>→</span> Integrate carefully</li>
+          <li><span>→</span> Test on staging first</li>
+          <li><span>→</span> Verify before shipping</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="insight-box">
+      <strong>Rule:</strong> Never let AI jump straight to Execute. Always force it through Plan first — even for small tasks. Ask: <em>"Before writing code, give me 2–3 approaches with trade-offs."</em>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- DAILY WORKFLOW -->
+  <div class="section fade-in" id="workflow">
+    <div class="section-eyebrow">03 · Workflow</div>
+    <h2 class="section-title">AI in your daily dev flow</h2>
+    <p class="section-lead">Seven concrete steps — from reading a ticket to shipping code. Click each step to see what to actually do and say to the AI.</p>
+
+    <div class="workflow-steps">
+      <div class="ws" onclick="toggleWs(this)">
+        <div class="ws-num">1</div>
+        <div class="ws-body">
+          <div class="ws-title">Understand the requirement <span class="ws-chevron">▼</span></div>
+          <div class="ws-detail">
+            <p class="ws-desc">Before writing a single line, paste the ticket/requirement into Claude or ChatGPT and ask it to summarize, surface edge cases, and flag ambiguities. This is a 2-minute step that saves hours of rework.</p>
+            <div class="ws-code">Tool: Claude or ChatGPT
+
+"Here is a feature requirement:
+[paste ticket content]
+
+Do the following:
+1. Summarize what I need to build in 3 sentences
+2. List any ambiguities or missing information
+3. List potential edge cases I should handle
+4. Ask me the 2 most important clarifying questions"</div>
+            <div class="ws-tip">→ Tip: If AI doesn't ask you clarifying questions, it's making assumptions. Prompt it to.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ws" onclick="toggleWs(this)">
+        <div class="ws-num">2</div>
+        <div class="ws-body">
+          <div class="ws-title">Explore the codebase <span class="ws-chevron">▼</span></div>
+          <div class="ws-detail">
+            <p class="ws-desc">Use Cursor (which sees your actual files) to map unfamiliar code. This replaces 30–60 minutes of manual reading with a 5-minute conversation. Start broad, then drill into what matters.</p>
+            <div class="ws-code">Tool: Cursor (with codebase context)
+
+"Explain what the [ModuleName] module does.
+Cover: what data it stores, key functions,
+any hooks attached to it, and relationships
+to other modules. Keep it under 200 words."
+
+Then follow-up:
+"Now trace the flow when a user saves a record.
+Show me which files are called, in order."</div>
+            <div class="ws-tip">→ Tip: Always start with "explain" before asking for changes. Understanding first, coding second.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ws" onclick="toggleWs(this)">
+        <div class="ws-num">3</div>
+        <div class="ws-body">
+          <div class="ws-title">Plan before coding <span class="ws-chevron">▼</span></div>
+          <div class="ws-detail">
+            <p class="ws-desc">This is the most skipped and most important step. Get AI to propose approaches — not write code. You evaluate and choose. Then agree on phases before execution starts.</p>
+            <div class="ws-code">Tool: Claude (best for multi-step planning)
+
+"I need to implement [feature]. Before writing any code:
+
+1. Give me 2–3 implementation approaches with trade-offs
+2. Flag any risks specific to SugarCRM's override system
+3. Recommend an approach and explain why
+4. Break the recommended approach into implementation phases
+5. List what assumptions you're making
+
+Do NOT write code yet."</div>
+            <div class="ws-tip">→ Tip: After getting the plan, say "What assumptions are you making?" Correct them before executing.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ws" onclick="toggleWs(this)">
+        <div class="ws-num">4</div>
+        <div class="ws-body">
+          <div class="ws-title">Generate code — in small chunks <span class="ws-chevron">▼</span></div>
+          <div class="ws-detail">
+            <p class="ws-desc">Once you've agreed on a plan, execute phase by phase. Never ask AI to generate a full feature in one shot. Small chunks = you stay in control.</p>
+            <div class="ws-code">Tool: Cursor
+
+"Implement phase 1 only: [describe phase 1].
+
+Constraints:
+- Only modify [specific file/function]
+- Do NOT change the function signature
+- Do NOT touch any other files
+- Add a comment explaining any non-obvious logic
+
+After writing the code, tell me:
+- What you changed and why
+- What you did NOT touch
+- Any edge cases you didn't handle"</div>
+            <div class="ws-tip">→ Tip: The "tell me what you changed" follow-up is critical. AI sometimes modifies more than asked.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ws" onclick="toggleWs(this)">
+        <div class="ws-num">5</div>
+        <div class="ws-body">
+          <div class="ws-title">Review and refine <span class="ws-chevron">▼</span></div>
+          <div class="ws-detail">
+            <p class="ws-desc">After generating code, use AI to review it — but from a critical angle, not a confirming one. Ask it to attack its own output. This surfaces issues faster than manual review.</p>
+            <div class="ws-code">Tool: Claude or ChatGPT
+
+"Here is the code you just generated:
+[paste code]
+
+Now review it critically. Answer:
+1. What could go wrong with this in production?
+2. Are there any edge cases not handled?
+3. Any hardcoded values that should be configurable?
+4. Any security concerns?
+5. Would this work correctly on 10k+ rows of data?"</div>
+            <div class="ws-tip">→ Tip: If AI says "looks good", push harder: "What would a senior engineer flag in a PR review?"</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ws" onclick="toggleWs(this)">
+        <div class="ws-num">6</div>
+        <div class="ws-body">
+          <div class="ws-title">Write tests <span class="ws-chevron">▼</span></div>
+          <div class="ws-detail">
+            <p class="ws-desc">AI is excellent at generating test scaffolding. Give it your function and ask for edge-case-focused tests — not just happy path. AI-written code especially needs tests because it can be subtly wrong.</p>
+            <div class="ws-code">Tool: Cursor or Claude
+
+"Write unit tests for this function:
+[paste function]
+
+Include tests for:
+1. Happy path (normal expected input)
+2. Empty/null input
+3. Edge case: [describe your specific edge case]
+4. Large data volume (simulate 10k rows)
+5. Invalid input that should be rejected
+
+Use [your testing framework] syntax."</div>
+            <div class="ws-tip">→ Tip: Run the tests. If AI-generated tests all pass immediately without any debugging, they may be too shallow.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ws" onclick="toggleWs(this)">
+        <div class="ws-num">7</div>
+        <div class="ws-body">
+          <div class="ws-title">Generate documentation <span class="ws-chevron">▼</span></div>
+          <div class="ws-detail">
+            <p class="ws-desc">Don't ship without docs. AI can generate onboarding-quality documentation from code in minutes. This is how we fix the "knowledge lives in heads" problem over time.</p>
+            <div class="ws-code">Tool: Claude
+
+"Generate developer documentation for this module/function:
+[paste code]
+
+Format it as:
+- What it does (2 sentences, plain English)
+- Key inputs and outputs
+- Important business rules it enforces
+- Things a new developer should NOT change without senior review
+- One usage example
+
+Keep it under 300 words. A junior dev should understand it."</div>
+            <div class="ws-tip">→ Tip: Add "what would a new developer misunderstand about this?" to catch hidden assumptions.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PROMPT LIBRARY -->
+  <div class="section fade-in" id="prompts">
+    <div class="section-eyebrow">04 · Prompt Library</div>
+    <h2 class="section-title">Copy-paste prompt templates</h2>
+    <p class="section-lead">Prompts organized by task type. DOTB tab has SugarCRM/PHP/SQL-specific versions. Generic tab works for any project. Click Copy to grab any prompt.</p>
+
+    <div class="prompt-tabs">
+      <button class="ptab active" onclick="switchPTab(this,'dotb')">DOTB Stack</button>
+      <button class="ptab" onclick="switchPTab(this,'debug')">Debugging</button>
+      <button class="ptab" onclick="switchPTab(this,'review')">Code Review</button>
+      <button class="ptab" onclick="switchPTab(this,'docs')">Docs</button>
+      <button class="ptab" onclick="switchPTab(this,'generic')">Generic</button>
+    </div>
+
+    <div class="prompt-panels">
+
+      <!-- DOTB -->
+      <div class="ppanel active" id="pp-dotb">
+        <div class="prompt-card">
+          <div class="pc-head">
+            <div class="pc-meta"><span class="pc-tag tag-sugar">SugarCRM</span><span class="pc-name">Map an unfamiliar custom module</span></div>
+            <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+          </div>
+          <div class="pc-body">
+            <div class="pc-prompt" data-prompt="I'm working on a SugarCRM customization. Explore the [ModuleName] module and give me:
+1. What it does and what data it stores
+2. Any hooks or logic hooks attached to it
+3. Its relationships to other modules
+4. Parts of the code that look fragile, non-standard, or likely to break
+
+Do not suggest changes yet. I just need to understand it first.">I'm working on a SugarCRM customization. Explore the [ModuleName] module and give me:
+1. What it does and what data it stores
+2. Any hooks or logic hooks attached to it
+3. Its relationships to other modules
+4. Parts of the code that look fragile, non-standard, or likely to break
+
+Do not suggest changes yet. I just need to understand it first.</div>
+            <div class="pc-why"><strong>Why this works:</strong> Separating "understand" from "change" prevents AI from jumping to solutions before you have full context.</div>
+          </div>
+        </div>
+
+        <div class="prompt-card">
+          <div class="pc-head">
+            <div class="pc-meta"><span class="pc-tag tag-php">PHP</span><span class="pc-name">Fix a bug with strict scope constraints</span></div>
+            <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+          </div>
+          <div class="pc-body">
+            <div class="pc-prompt" data-prompt="I have a bug in this PHP function inside a SugarCRM customization:
+
+[paste code]
+
+Error: [paste error message or describe the symptom]
+
+Rules:
+- Only modify code inside this function
+- Do NOT change the function signature
+- Do NOT touch any files other than this one
+- This runs on every record save, so keep performance in mind
+
+Give me the fix and explain: what caused the bug, what you changed, and what you did NOT touch.">I have a bug in this PHP function inside a SugarCRM customization:
+
+[paste code]
+
+Error: [paste error message or describe the symptom]
+
+Rules:
+- Only modify code inside this function
+- Do NOT change the function signature
+- Do NOT touch any files other than this one
+- This runs on every record save, so keep performance in mind
+
+Give me the fix and explain: what caused the bug, what you changed, and what you did NOT touch.</div>
+            <div class="pc-why"><strong>Why this works:</strong> Explicit constraints ("do not touch X") prevent the scope creep that causes AI to break working code while fixing something else.</div>
+          </div>
+        </div>
+
+        <div class="prompt-card">
+          <div class="pc-head">
+            <div class="pc-meta"><span class="pc-tag tag-sql">SQL</span><span class="pc-name">Optimize a slow query safely</span></div>
+            <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+          </div>
+          <div class="pc-body">
+            <div class="pc-prompt" data-prompt="This SQL query runs inside our SugarCRM report module. It's slow on large datasets (80k+ rows in production):
+
+[paste query]
+
+Investigate and tell me:
+1. What's likely causing the slowness (missing index, full scan, N+1, etc.)
+2. Two optimization options — one safe/minimal change, one more aggressive
+3. The SQL for EXPLAIN or EXPLAIN ANALYZE I should run to confirm the bottleneck
+4. Any risks I should check before applying changes in production
+
+Do not rewrite the full query yet. Just diagnose and propose.">This SQL query runs inside our SugarCRM report module. It's slow on large datasets (80k+ rows in production):
+
+[paste query]
+
+Investigate and tell me:
+1. What's likely causing the slowness (missing index, full scan, N+1, etc.)
+2. Two optimization options — one safe/minimal change, one more aggressive
+3. The SQL for EXPLAIN or EXPLAIN ANALYZE I should run to confirm the bottleneck
+4. Any risks I should check before applying changes in production
+
+Do not rewrite the full query yet. Just diagnose and propose.</div>
+            <div class="pc-why"><strong>Why this works:</strong> Asking for diagnosis before rewrite means you understand the problem before changing anything. AI-generated SQL must always be verified with EXPLAIN in production data volumes.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEBUG -->
+      <div class="ppanel" id="pp-debug">
+        <div class="prompt-card">
+          <div class="pc-head">
+            <div class="pc-meta"><span class="pc-tag tag-generic">Generic</span><span class="pc-name">Structured error diagnosis</span></div>
+            <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+          </div>
+          <div class="pc-body">
+            <div class="pc-prompt" data-prompt="I'm getting this error in [language/framework]:
+
+[paste exact error message]
+
+Here is the relevant code:
+[paste code]
+
+Context:
+- This broke after: [what changed recently]
+- Expected behavior: [what should happen]
+- Actual behavior: [what is happening instead]
+
+Give me:
+1. The root cause of the error
+2. The minimal fix
+3. Any other code that might need updating as a result
+4. How to test that the fix worked">I'm getting this error in [language/framework]:
+
+[paste exact error message]
+
+Here is the relevant code:
+[paste code]
+
+Context:
+- This broke after: [what changed recently]
+- Expected behavior: [what should happen]
+- Actual behavior: [what is happening instead]
+
+Give me:
+1. The root cause of the error
+2. The minimal fix
+3. Any other code that might need updating as a result
+4. How to test that the fix worked</div>
+            <div class="pc-why"><strong>Why this works:</strong> Giving the "before" context (what changed recently) gives AI the signal it needs to pinpoint cause vs. symptom.</div>
+          </div>
+        </div>
+
+        <div class="prompt-card">
+          <div class="pc-head">
+            <div class="pc-meta"><span class="pc-tag tag-generic">Generic</span><span class="pc-name">Trace a confusing function</span></div>
+            <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+          </div>
+          <div class="pc-body">
+            <div class="pc-prompt" data-prompt="I don't understand what this function does or why it behaves this way:
+
+[paste code]
+
+Walk me through it line by line. For each meaningful block, explain:
+- What it does
+- Why it might be written this way
+- Any side effects or dependencies I should know about
+
+End with a one-sentence summary of the function's purpose.">I don't understand what this function does or why it behaves this way:
+
+[paste code]
+
+Walk me through it line by line. For each meaningful block, explain:
+- What it does
+- Why it might be written this way
+- Any side effects or dependencies I should know about
+
+End with a one-sentence summary of the function's purpose.</div>
+            <div class="pc-why"><strong>Why this works:</strong> Line-by-line explanation forces AI to be precise rather than give a vague summary.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REVIEW -->
+      <div class="ppanel" id="pp-review">
+        <div class="prompt-card">
+          <div class="pc-head">
+            <div class="pc-meta"><span class="pc-tag tag-generic">Review</span><span class="pc-name">Senior engineer PR review simulation</span></div>
+            <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+          </div>
+          <div class="pc-body">
+            <div class="pc-prompt" data-prompt="Review this code as if you were a senior engineer doing a PR review. Be direct and critical — don't soften feedback.
+
+[paste code]
+
+Check for:
+1. Logic errors or incorrect assumptions
+2. Missing edge case handling
+3. Security issues (injection, auth, data exposure)
+4. Performance concerns (especially at scale)
+5. Readability and maintainability
+6. Anything you'd block the PR over
+
+Rate severity: BLOCK / COMMENT / NITPICK for each issue.">Review this code as if you were a senior engineer doing a PR review. Be direct and critical — don't soften feedback.
+
+[paste code]
+
+Check for:
+1. Logic errors or incorrect assumptions
+2. Missing edge case handling
+3. Security issues (injection, auth, data exposure)
+4. Performance concerns (especially at scale)
+5. Readability and maintainability
+6. Anything you'd block the PR over
+
+Rate severity: BLOCK / COMMENT / NITPICK for each issue.</div>
+            <div class="pc-why"><strong>Why this works:</strong> "Be critical" gives AI permission to flag issues it might otherwise soften. The severity rating makes the output actionable.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DOCS -->
+      <div class="ppanel" id="pp-docs">
+        <div class="prompt-card">
+          <div class="pc-head">
+            <div class="pc-meta"><span class="pc-tag tag-generic">Docs</span><span class="pc-name">Onboarding doc from code</span></div>
+            <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+          </div>
+          <div class="pc-body">
+            <div class="pc-prompt" data-prompt="Generate a developer onboarding document for this module or feature:
+
+[paste code or describe the feature]
+
+Structure it as:
+## What it does
+(2–3 sentences, plain English, no jargon)
+
+## Key files and their roles
+
+## Business rules it enforces
+(list the logic that reflects real business decisions)
+
+## Safe to modify vs. do not touch
+(what a new dev can change vs. what needs senior review)
+
+## Common mistakes to avoid
+
+## One example of how to use it
+
+Keep the whole doc under 400 words.">Generate a developer onboarding document for this module or feature:
+
+[paste code or describe the feature]
+
+Structure it as:
+## What it does
+(2–3 sentences, plain English, no jargon)
+
+## Key files and their roles
+
+## Business rules it enforces
+(list the logic that reflects real business decisions)
+
+## Safe to modify vs. do not touch
+(what a new dev can change vs. what needs senior review)
+
+## Common mistakes to avoid
+
+## One example of how to use it
+
+Keep the whole doc under 400 words.</div>
+            <div class="pc-why"><strong>Why this works:</strong> The "safe to modify vs. do not touch" section is what junior devs need most and what AI can infer from code patterns.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GENERIC -->
+      <div class="ppanel" id="pp-generic">
+        <div class="prompt-card">
+          <div class="pc-head">
+            <div class="pc-meta"><span class="pc-tag tag-plan">Planning</span><span class="pc-name">Feature planning — force plan before code</span></div>
+            <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+          </div>
+          <div class="pc-body">
+            <div class="pc-prompt" data-prompt="I need to implement: [describe the feature]
+
+Stack: [language, framework, database]
+Constraints: [time, team size, things that cannot change]
+
+Before writing any code:
+1. Give me 2–3 implementation approaches with pros and cons
+2. Recommend one and explain your reasoning
+3. Break the recommended approach into clear phases (input → output for each phase)
+4. List the assumptions you're making about my system
+5. Ask me the 2 most important questions before we proceed
+
+Do NOT write code yet.">I need to implement: [describe the feature]
+
+Stack: [language, framework, database]
+Constraints: [time, team size, things that cannot change]
+
+Before writing any code:
+1. Give me 2–3 implementation approaches with pros and cons
+2. Recommend one and explain your reasoning
+3. Break the recommended approach into clear phases (input → output for each phase)
+4. List the assumptions you're making about my system
+5. Ask me the 2 most important questions before we proceed
+
+Do NOT write code yet.</div>
+            <div class="pc-why"><strong>Why this works:</strong> This is the foundational Prompt → Plan template. It forces collaborative planning and exposes AI's assumptions before you're committed to a direction.</div>
+          </div>
+        </div>
+
+        <div class="prompt-card">
+          <div class="pc-head">
+            <div class="pc-meta"><span class="pc-tag tag-generic">Generic</span><span class="pc-name">Refactor with safe scope</span></div>
+            <button class="copy-btn" onclick="copyPrompt(this)">Copy</button>
+          </div>
+          <div class="pc-body">
+            <div class="pc-prompt" data-prompt="Refactor this code for readability and maintainability. Do NOT change behavior.
+
+[paste code]
+
+Rules:
+- Only modify what's necessary for clarity
+- Keep the same function signatures
+- Add a comment above each change explaining why you made it
+
+After refactoring, give me a diff summary:
+- What you changed
+- What you deliberately left unchanged and why">Refactor this code for readability and maintainability. Do NOT change behavior.
+
+[paste code]
+
+Rules:
+- Only modify what's necessary for clarity
+- Keep the same function signatures
+- Add a comment above each change explaining why you made it
+
+After refactoring, give me a diff summary:
+- What you changed
+- What you deliberately left unchanged and why</div>
+            <div class="pc-why"><strong>Why this works:</strong> The diff summary at the end is the most important part — it reveals if AI changed things you didn't ask it to.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- CASE STUDY -->
+  <div class="section fade-in" id="casestudy">
+    <div class="section-eyebrow">05 · Case Study</div>
+    <h2 class="section-title">Real examples, step by step</h2>
+    <p class="section-lead">These are worked examples of Prompt → Plan → Execute applied to real DOTB problems. Expand each to see the full flow — including what the AI was actually told at each phase.</p>
+
+    <!-- Case Study 1 -->
+    <div class="case-study" id="cs1">
+      <div class="cs-header" onclick="toggleCS(this.parentElement)">
+        <div>
+          <div class="cs-badge">Case Study 01 · Performance</div>
+          <div class="cs-title">Optimizing the Report module for large datasets</div>
+        </div>
+        <span class="cs-chevron">▼</span>
+      </div>
+      <div class="cs-body">
+        <div class="cs-phase">
+          <div class="cs-phase-label phase-prompt">Prompt</div>
+          <div class="cs-phase-content">
+            Problem: Report feature crashes and times out on datasets with 10k+ rows. Users can't export large reports.
+            <div class="cs-phase-code">Tool: Claude
+
+"Give me a document about the Report workflow,
+then explore to find the bottleneck that makes
+it run slowly on huge data. Do not suggest fixes yet —
+just help me understand what's happening."</div>
+          </div>
+        </div>
+        <div class="cs-phase">
+          <div class="cs-phase-label phase-plan">Plan</div>
+          <div class="cs-phase-content">
+            AI identified 3 core problems. We validated them against the actual code before agreeing on a plan.
+            <div class="cs-phase-code">Core problems AI found:
+1. Generic field formatting on every row (1s/row × 10k rows = hours)
+2. Grand total + detail queries run simultaneously
+3. No pagination — all data sent to client at once → browser crash
+
+Our response: confirmed all 3 against codebase.
+Then: "Propose a phased plan. Phase 1 = grand total / detail split.
+Phase 2 = lazy load detail. Phase 3 = pagination.
+Define input/output for each phase."</div>
+          </div>
+        </div>
+        <div class="cs-phase">
+          <div class="cs-phase-label phase-execute">Execute</div>
+          <div class="cs-phase-content">
+            Phase 1 only. One function at a time. Reviewed each output before moving on.
+            <div class="cs-phase-code">Tool: Cursor
+
+"Implement phase 1 only: separate the grand total
+query from the detail query. The detail query should
+only run when a user clicks 'expand.'
+
+Do NOT touch any other files.
+Do NOT change the existing API contract.
+After writing, tell me exactly what you changed."</div>
+          </div>
+        </div>
+        <div class="cs-phase">
+          <div class="cs-phase-label phase-verify">Verify</div>
+          <div class="cs-phase-content">Used the full verification checklist + asked AI to self-review before testing on staging.</div>
+        </div>
+        <div class="cs-lesson">→ Key lesson: Spending 20 minutes in the Plan phase (understanding root causes) saved us from building the wrong solution. The first instinct was to add caching — the actual fix was query separation.</div>
+      </div>
+    </div>
+
+    <!-- Case Study 2 -->
+    <div class="case-study" id="cs2">
+      <div class="cs-header" onclick="toggleCS(this.parentElement)">
+        <div>
+          <div class="cs-badge">Case Study 02 · Onboarding</div>
+          <div class="cs-title">A new developer maps the Account module in 30 minutes</div>
+        </div>
+        <span class="cs-chevron">▼</span>
+      </div>
+      <div class="cs-body">
+        <div class="cs-phase">
+          <div class="cs-phase-label phase-prompt">Prompt</div>
+          <div class="cs-phase-content">
+            Context: New junior dev needs to add a field to the Account module. Has never touched SugarCRM before.
+            <div class="cs-phase-code">Tool: Cursor (with codebase open)
+
+"I'm new to this codebase. Explain the Account module to me.
+What does it store, what hooks are on it, and what would
+a beginner most likely break by accident?"</div>
+          </div>
+        </div>
+        <div class="cs-phase">
+          <div class="cs-phase-label phase-plan">Plan</div>
+          <div class="cs-phase-content">
+            AI explained the module structure, flagged 2 fragile hooks, and suggested the safest place to add the new field.
+            <div class="cs-phase-code">"Given that structure, where is the safest place to add
+a custom text field called 'contract_ref'?
+Show me which file to edit and what not to touch."</div>
+          </div>
+        </div>
+        <div class="cs-phase">
+          <div class="cs-phase-label phase-execute">Execute</div>
+          <div class="cs-phase-content">
+            Junior dev made the change with AI guidance. Senior reviewed the output in 5 minutes instead of pair-programming for 2 hours.
+          </div>
+        </div>
+        <div class="cs-lesson">→ Key lesson: AI as an onboarding tool compresses the "exploration phase" dramatically. The senior's time went from 2 hours of hand-holding to a 5-minute review.</div>
+      </div>
+    </div>
+
+    <!-- Case Study 3 -->
+    <div class="case-study" id="cs3">
+      <div class="cs-header" onclick="toggleCS(this.parentElement)">
+        <div>
+          <div class="cs-badge">Case Study 03 · Generic</div>
+          <div class="cs-title">Planning a paginated API endpoint from scratch</div>
+        </div>
+        <span class="cs-chevron">▼</span>
+      </div>
+      <div class="cs-body">
+        <div class="cs-phase">
+          <div class="cs-phase-label phase-prompt">Prompt</div>
+          <div class="cs-phase-content">
+            Generic scenario: Any stack. Build a paginated list endpoint with filtering.
+            <div class="cs-phase-code">Tool: Claude
+
+"I need to build a paginated list API endpoint with filtering.
+Stack: PHP, MySQL, REST API.
+Constraints: must support cursor-based pagination (not offset),
+filtering by date range and status.
+
+Before writing code: give me 2 approaches,
+list your assumptions, and ask me what you need to know."</div>
+          </div>
+        </div>
+        <div class="cs-phase">
+          <div class="cs-phase-label phase-plan">Plan</div>
+          <div class="cs-phase-content">
+            Claude proposed cursor vs. keyset pagination, explained the trade-offs for large datasets, asked about sort requirements. Plan agreed before a line was written.
+          </div>
+        </div>
+        <div class="cs-phase">
+          <div class="cs-phase-label phase-execute">Execute</div>
+          <div class="cs-phase-content">
+            Generated in 3 phases: query layer → pagination logic → API response format. Each reviewed before the next was generated.
+          </div>
+        </div>
+        <div class="cs-lesson">→ Key lesson: The constraint "cursor-based, not offset" was in the prompt. If it wasn't, AI would have defaulted to LIMIT/OFFSET which breaks on large datasets. Constraints in the prompt = better output.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- DO / DON'T -->
+  <div class="section fade-in" id="dodo">
+    <div class="section-eyebrow">06 · Rules</div>
+    <h2 class="section-title">Do & Don't</h2>
+    <p class="section-lead">These rules are specific to DOTB's stack. The SugarCRM ones are the most important — generic AI advice won't tell you these.</p>
+    <div class="dodo">
+      <div class="do-col">
+        <div class="col-header">✓ Do</div>
+        <div class="dd-item"><span class="dd-icon">✓</span><span>Tell AI your SugarCRM version and which custom/ overrides exist</span></div>
+        <div class="dd-item"><span class="dd-icon">✓</span><span>Force Plan phase before any code generation</span></div>
+        <div class="dd-item"><span class="dd-icon">✓</span><span>Paste real errors, real code, real table schemas — not descriptions</span></div>
+        <div class="dd-item"><span class="dd-icon">✓</span><span>Say explicitly what NOT to change in every prompt</span></div>
+        <div class="dd-item"><span class="dd-icon">✓</span><span>Run EXPLAIN on every AI-generated SQL before production</span></div>
+        <div class="dd-item"><span class="dd-icon">✓</span><span>Use AI to review its own output with a critical angle</span></div>
+        <div class="dd-item"><span class="dd-icon">✓</span><span>Generate one function / one phase at a time</span></div>
+        <div class="dd-item"><span class="dd-icon">✓</span><span>Test on staging. Always. AI doesn't know your data volume.</span></div>
+      </div>
+      <div class="dont-col">
+        <div class="col-header">✗ Don't</div>
+        <div class="dd-item"><span class="dd-icon">✗</span><span>Trust Sugar suggestions without checking custom/ folder first</span></div>
+        <div class="dd-item"><span class="dd-icon">✗</span><span>Paste credentials, API tokens, or customer data into any AI tool</span></div>
+        <div class="dd-item"><span class="dd-icon">✗</span><span>Ask AI to refactor a whole file — it will change things you didn't ask</span></div>
+        <div class="dd-item"><span class="dd-icon">✗</span><span>Let AI decide on business logic — it doesn't know your client's rules</span></div>
+        <div class="dd-item"><span class="dd-icon">✗</span><span>Ship code you can't explain in a PR review</span></div>
+        <div class="dd-item"><span class="dd-icon">✗</span><span>Assume AI's output is up-to-date — it has a knowledge cutoff</span></div>
+        <div class="dd-item"><span class="dd-icon">✗</span><span>Skip tests because "AI wrote it, it's probably fine"</span></div>
+        <div class="dd-item"><span class="dd-icon">✗</span><span>Use the same tool for everything — match tool to task type</span></div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- TOOL GLOSSARY -->
+  <div class="section fade-in" id="tools">
+    <div class="section-eyebrow">07 · Tool Glossary</div>
+    <h2 class="section-title">Which tool for which task</h2>
+    <p class="section-lead">We use three tools: Cursor, Claude, and ChatGPT. Each has a primary job. Using the wrong tool for a task gives worse results — here's the map.</p>
+    <div class="tool-grid">
+      <div class="tool-card">
+        <div class="tc-top"><span class="tc-name">Cursor</span><span class="tc-price paid">$20/mo</span></div>
+        <div class="tc-task">Primary use → Coding</div>
+        <div class="tc-desc">VS Code with AI built in. It reads your actual files, so it knows your codebase. Best when the task requires file context — debugging, refactoring, exploring modules.</div>
+        <div class="tc-tags"><span class="tc-tag">codebase-aware</span><span class="tc-tag">debugging</span><span class="tc-tag">refactor</span><span class="tc-tag">generate</span></div>
+      </div>
+      <div class="tool-card">
+        <div class="tc-top"><span class="tc-name">Claude</span><span class="tc-price paid">$20/mo</span></div>
+        <div class="tc-task">Primary use → Planning & Docs</div>
+        <div class="tc-desc">Strongest for multi-step reasoning, long-context analysis, and documentation. Use it to plan before you go to Cursor to code. Longest context window of the three.</div>
+        <div class="tc-tags"><span class="tc-tag">planning</span><span class="tc-tag">long context</span><span class="tc-tag">docs</span><span class="tc-tag">analysis</span></div>
+      </div>
+      <div class="tool-card">
+        <div class="tc-top"><span class="tc-name">ChatGPT</span><span class="tc-price free">Free / $20</span></div>
+        <div class="tc-task">Primary use → Brainstorming</div>
+        <div class="tc-desc">Good for exploring options, explaining concepts quickly, and early-stage thinking. Widely familiar. Use it to think through approaches before committing to a tool with your actual code.</div>
+        <div class="tc-tags"><span class="tc-tag">brainstorm</span><span class="tc-tag">concepts</span><span class="tc-tag">quick questions</span></div>
+      </div>
+    </div>
+    <div class="insight-box">
+      <strong>Recommended workflow:</strong> ChatGPT to explore an idea → Claude to plan the implementation → Cursor to write and refine the code.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- VERIFICATION CHECKLIST -->
+  <div class="section fade-in" id="verify">
+    <div class="section-eyebrow">08 · Checklist</div>
+    <h2 class="section-title">Verification checklist</h2>
+    <p class="section-lead">Run through this before shipping anything AI helped build. Tick off items as you go. If you can't answer "yes" to every item — don't ship.</p>
+
+    <p class="progress-label" id="prog-label">0 of 18 completed</p>
+    <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+
+    <div class="vchecklist">
+      <div class="vc-group">
+        <div class="vc-group-title">Before prompting</div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">I defined the task: input, expected output, and constraints</div></div></div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">No sensitive data, credentials, or customer PII in my prompt</div><div class="vc-note">SugarCRM: check for DB connection strings, API keys in code snippets</div></div></div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">I've told AI my SugarCRM version and which customizations are active</div></div></div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">I've stated explicitly what should NOT be changed</div></div></div>
+      </div>
+      <div class="vc-group">
+        <div class="vc-group-title">During planning</div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">I got a plan with trade-offs before any code was generated</div></div></div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">I asked "what assumptions are you making?" and corrected wrong ones</div></div></div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">Plan doesn't conflict with any existing SugarCRM overrides</div></div></div>
+      </div>
+      <div class="vc-group">
+        <div class="vc-group-title">After code generation</div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">I read every line — I can explain what it does without looking at AI's answer</div></div></div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">I asked "what else did you change?" and confirmed scope wasn't exceeded</div></div></div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">No hardcoded values (credentials, magic numbers, environment-specific strings)</div></div></div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">All SQL has been run through EXPLAIN / EXPLAIN ANALYZE</div><div class="vc-note">Never trust AI-generated SQL at scale until you verify the query plan</div></div></div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">I've run the critical review prompt: "what could go wrong in production?"</div></div></div>
+      </div>
+      <div class="vc-group">
+        <div class="vc-group-title">Before committing</div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">Tested on local or staging — not just on dev with 200 rows</div></div></div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">Edge cases tested: null input, empty results, large volume, invalid types</div></div></div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">Tests written or updated for the changed logic</div></div></div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">Any business logic or auth change reviewed by a senior</div></div></div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">PR description notes what AI assisted with</div><div class="vc-note">Transparency helps reviewers know where to look carefully</div></div></div>
+        <div class="vc-item" onclick="tickItem(this)"><div class="vc-box"><span class="vc-check">✓</span></div><div><div class="vc-text">Documentation updated or generated for the new/changed logic</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- WHEN AI FAILS -->
+  <div class="section fade-in" id="fails">
+    <div class="section-eyebrow">09 · Failure Patterns</div>
+    <h2 class="section-title">When AI makes things worse</h2>
+    <p class="section-lead">These are real failure patterns — not hypothetical. Understanding them helps you recognize the warning signs before shipping broken code.</p>
+
+    <div class="fail-card">
+      <div class="fail-title">⚠ AI suggested standard Sugar logic — we had a custom override</div>
+      <div class="fail-body">Asked Cursor to fix a save error in a custom module. It suggested the standard SugarCRM approach — which was already overridden in our custom/Extension folder. Applying it silently broke the override and caused records to save incorrectly for 2 hours before anyone noticed.</div>
+      <div class="fail-lesson">→ Lesson: Always tell AI which customizations exist before it touches anything Sugar-related. Check custom/ folder before applying any Sugar suggestion.</div>
+    </div>
+
+    <div class="fail-card">
+      <div class="fail-title">⚠ "Clean up this function" became a full file refactor</div>
+      <div class="fail-body">Asked to "clean up this function." AI rewrote 3 functions, renamed variables, and changed a return type. The code looked cleaner but broke 2 callers in other files that weren't checked. It passed code review and went to prod before the break was found.</div>
+      <div class="fail-lesson">→ Lesson: Scope every prompt explicitly. "Only modify lines 45–72." Always follow up: "What else did you change outside what I asked?"</div>
+    </div>
+
+    <div class="fail-card">
+      <div class="fail-title">⚠ AI's SQL was correct on dev, catastrophic on prod</div>
+      <div class="fail-body">Generated a working SQL query for the report module. Tested on dev with 200 rows — fast. Deployed to production with 80k rows — full table scan, timeout, service degraded for 30 minutes. AI had no idea about production data volume.</div>
+      <div class="fail-lesson">→ Lesson: Always run EXPLAIN on AI-generated SQL. Tell AI the expected row count upfront so it designs indexes into the query.</div>
+    </div>
+
+    <div class="fail-card">
+      <div class="fail-title">⚠ AI confidently cited a SugarCRM API from 2 versions ago</div>
+      <div class="fail-body">Asked ChatGPT how to use a specific SugarCRM API endpoint. Got a detailed, confident answer — for a version 2 major versions older than ours. The method signature had changed. Spent 45 minutes debugging why the code wouldn't run before discovering the API had been updated.</div>
+      <div class="fail-lesson">→ Lesson: AI has a knowledge cutoff and doesn't know your exact Sugar version. Always verify API usage against your actual codebase or official docs.</div>
+    </div>
+
+    <div class="fail-card">
+      <div class="fail-title">⚠ Great plan — but AI skipped asking critical questions</div>
+      <div class="fail-body">Got a detailed 5-phase implementation plan from Claude. Followed it faithfully. Phase 3 assumed the grand total query was already separated from the detail query — it wasn't in our system. Had to redo phases 3 and 4 after discovering this mid-execution.</div>
+      <div class="fail-lesson">→ Lesson: After every plan, ask explicitly: "What assumptions are you making about my system?" Correct them before you start executing anything.</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- KEYWORD INDEX -->
+  <div class="section fade-in" id="keywords">
+    <div class="section-eyebrow">10 · Keyword Index</div>
+    <h2 class="section-title">Terms to know & where to learn more</h2>
+    <p class="section-lead">Keywords and concepts from this handbook — with plain-English definitions and research links. Use these to go deeper on any topic.</p>
+    <div class="kw-grid">
+      <div class="kw-card">
+        <div class="kw-term">Prompt Engineering</div>
+        <div class="kw-def">The practice of structuring AI inputs to get better, more reliable outputs. Most of this handbook is applied prompt engineering.</div>
+        <div class="kw-links"><a class="kw-link" href="https://platform.openai.com/docs/guides/prompt-engineering" target="_blank">OpenAI Guide</a><a class="kw-link" href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview" target="_blank">Anthropic Docs</a></div>
+      </div>
+      <div class="kw-card">
+        <div class="kw-term">Context Window</div>
+        <div class="kw-def">The maximum amount of text an AI can "see" at once. Larger = it can read more of your codebase. Claude has one of the largest available.</div>
+        <div class="kw-links"><a class="kw-link" href="https://www.anthropic.com/claude" target="_blank">Claude context</a></div>
+      </div>
+      <div class="kw-card">
+        <div class="kw-term">Hallucination</div>
+        <div class="kw-def">When AI generates confident-sounding but incorrect information. A major risk when using AI for APIs, version-specific features, or domain-specific logic.</div>
+        <div class="kw-links"><a class="kw-link" href="https://en.wikipedia.org/wiki/Hallucination_(artificial_intelligence)" target="_blank">Wikipedia</a></div>
+      </div>
+      <div class="kw-card">
+        <div class="kw-term">RAG (Retrieval-Augmented Generation)</div>
+        <div class="kw-def">A technique where AI retrieves relevant documents before answering. How Cursor works — it retrieves relevant files from your codebase to add to the prompt context.</div>
+        <div class="kw-links"><a class="kw-link" href="https://docs.cursor.com" target="_blank">Cursor Docs</a></div>
+      </div>
+      <div class="kw-card">
+        <div class="kw-term">Few-Shot Prompting</div>
+        <div class="kw-def">Giving AI 1–3 examples of the format or style you want before asking for the real output. Dramatically improves consistency of AI-generated code.</div>
+        <div class="kw-links"><a class="kw-link" href="https://www.promptingguide.ai/techniques/fewshot" target="_blank">Prompting Guide</a></div>
+      </div>
+      <div class="kw-card">
+        <div class="kw-term">Chain-of-Thought</div>
+        <div class="kw-def">Asking AI to "think step by step" before giving an answer. Adding this phrase to prompts consistently improves output quality on complex tasks.</div>
+        <div class="kw-links"><a class="kw-link" href="https://www.promptingguide.ai/techniques/cot" target="_blank">Prompting Guide</a></div>
+      </div>
+      <div class="kw-card">
+        <div class="kw-term">Knowledge Cutoff</div>
+        <div class="kw-def">The date after which an AI model has no training data. It won't know about library updates, API changes, or new Sugar versions released after that date.</div>
+        <div class="kw-links"><a class="kw-link" href="https://platform.openai.com/docs" target="_blank">OpenAI Docs</a></div>
+      </div>
+      <div class="kw-card">
+        <div class="kw-term">Agentic AI / AI Agents</div>
+        <div class="kw-def">AI that can take multi-step actions autonomously — running commands, reading files, and iterating. Cursor's "agent mode" is an example. Higher power, higher risk of scope creep.</div>
+        <div class="kw-links"><a class="kw-link" href="https://docs.cursor.com/agent" target="_blank">Cursor Agent</a></div>
+      </div>
+      <div class="kw-card">
+        <div class="kw-term">EXPLAIN / Query Plan</div>
+        <div class="kw-def">SQL command that shows how the database executes a query — whether it's doing a full scan, using indexes, etc. Run this on every AI-generated SQL before production.</div>
+        <div class="kw-links"><a class="kw-link" href="https://dev.mysql.com/doc/refman/8.0/en/explain.html" target="_blank">MySQL EXPLAIN</a></div>
+      </div>
+      <div class="kw-card">
+        <div class="kw-term">SugarCRM Logic Hooks</div>
+        <div class="kw-def">PHP event callbacks that run before/after Sugar operations (save, delete, etc.). AI often doesn't know about your custom hooks — always tell it which ones exist.</div>
+        <div class="kw-links"><a class="kw-link" href="https://support.sugarcrm.com/Documentation/Sugar_Developer/Sugar_Developer_Guide/Extensions/Application/Logic_Hooks/" target="_blank">Sugar Docs</a></div>
+      </div>
+      <div class="kw-card">
+        <div class="kw-term">Cursor Composer / Agent</div>
+        <div class="kw-def">Cursor's multi-file, multi-step editing mode. Can make changes across many files at once. Powerful but requires careful scoping — it can change more than you expect.</div>
+        <div class="kw-links"><a class="kw-link" href="https://docs.cursor.com" target="_blank">Cursor Docs</a></div>
+      </div>
+      <div class="kw-card">
+        <div class="kw-term">System Prompt / Custom Instructions</div>
+        <div class="kw-def">Persistent context you give to an AI before every conversation. Use this to tell Claude or ChatGPT about your stack, team conventions, and constraints once — not in every message.</div>
+        <div class="kw-links"><a class="kw-link" href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/system-prompts" target="_blank">Anthropic Docs</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK REF -->
+  <div class="section fade-in">
+    <div class="section-eyebrow">Quick Reference</div>
+    <h2 class="section-title">One-line reminders</h2>
+    <div class="qref-grid">
+      <div class="qref-card"><div class="qref-label">Core rule</div><div class="qref-text">Accelerate thinking. Don't skip it.</div></div>
+      <div class="qref-card"><div class="qref-label">On prompting</div><div class="qref-text">Real code. Real errors. No paraphrasing.</div></div>
+      <div class="qref-card"><div class="qref-label">On planning</div><div class="qref-text">Get 2–3 approaches before any code.</div></div>
+      <div class="qref-card"><div class="qref-label">On executing</div><div class="qref-text">One function. One phase. Review each.</div></div>
+      <div class="qref-card"><div class="qref-label">On SQL</div><div class="qref-text">EXPLAIN before production. Always.</div></div>
+      <div class="qref-card"><div class="qref-label">On shipping</div><div class="qref-text">If you can't explain it, don't ship it.</div></div>
+      <div class="qref-card"><div class="qref-label">On SugarCRM</div><div class="qref-text">Check custom/ before applying any Sugar suggestion.</div></div>
+      <div class="qref-card"><div class="qref-label">On security</div><div class="qref-text">No credentials. No PII. No exceptions.</div></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── MENU ──
+function toggleMenu(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('visible');
+}
+function closeMenu(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('visible');
+}
+
+// ── SCROLL TO ──
+function scrollToSection(id){
+  const el = document.getElementById(id);
+  if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); }
+  if(window.innerWidth < 768) closeMenu();
+}
+
+// ── ACTIVE NAV ──
+const sections = ['why','problems','ppe','workflow','prompts','casestudy','dodo','tools','verify','fails','keywords'];
+const navLinks = document.querySelectorAll('.nav-link');
+window.addEventListener('scroll', ()=>{
+  let current = '';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if(el && window.scrollY >= el.offsetTop - 80) current = id;
+  });
+  navLinks.forEach(l => {
+    l.classList.remove('active');
+    if(l.getAttribute('onclick') && l.getAttribute('onclick').includes("'"+current+"'")) l.classList.add('active');
+  });
+});
+
+// ── WORKFLOW STEPS ──
+function toggleWs(el){
+  el.classList.toggle('open');
+}
+
+// ── CASE STUDIES ──
+function toggleCS(el){
+  el.classList.toggle('open');
+}
+
+// ── PROMPT TABS ──
+function switchPTab(btn, id){
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.ppanel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('pp-'+id).classList.add('active');
+}
+
+// ── COPY PROMPTS ──
+function copyPrompt(btn){
+  const card = btn.closest('.prompt-card');
+  const text = card.querySelector('[data-prompt]').getAttribute('data-prompt');
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ── CHECKLIST ──
+let totalItems = 18;
+function tickItem(el){
+  el.classList.toggle('done');
+  const done = document.querySelectorAll('.vc-item.done').length;
+  document.getElementById('prog-fill').style.width = Math.round(done/totalItems*100)+'%';
+  document.getElementById('prog-label').textContent = done + ' of ' + totalItems + ' completed';
+}
+
+// ── SEARCH ──
+const searchData = [
+  {section:'Core Framework', title:'Prompt → Plan → Execute', snippet:'Three-phase framework. Never skip the Plan phase.', anchor:'ppe'},
+  {section:'Workflow', title:'Understand requirement', snippet:'Paste ticket into Claude, ask for edge cases and clarifications first.', anchor:'workflow'},
+  {section:'Workflow', title:'Explore codebase', snippet:'Use Cursor with codebase context. Start with explain, then drill down.', anchor:'workflow'},
+  {section:'Workflow', title:'Plan before coding', snippet:'Get 2–3 approaches with trade-offs. Do NOT write code yet.', anchor:'workflow'},
+  {section:'Workflow', title:'Generate code in small chunks', snippet:'One function, one phase at a time. Ask what else was changed.', anchor:'workflow'},
+  {section:'Workflow', title:'Review and refine', snippet:'Ask AI to review its own output critically. "What could go wrong?"', anchor:'workflow'},
+  {section:'Workflow', title:'Write tests', snippet:'AI generates test scaffolding. Always run the tests after.', anchor:'workflow'},
+  {section:'Workflow', title:'Generate documentation', snippet:'AI turns code into onboarding-ready docs in minutes.', anchor:'workflow'},
+  {section:'Prompt Library', title:'Map a SugarCRM module', snippet:'Explore module structure without asking for changes yet.', anchor:'prompts'},
+  {section:'Prompt Library', title:'Fix a PHP bug with constraints', snippet:'State what not to change. Ask for explanation of fix.', anchor:'prompts'},
+  {section:'Prompt Library', title:'Optimize a slow SQL query', snippet:'Diagnose before rewriting. Always verify with EXPLAIN.', anchor:'prompts'},
+  {section:'Prompt Library', title:'Senior engineer PR review', snippet:'Ask AI to be critical. Rate severity: BLOCK / COMMENT / NITPICK.', anchor:'prompts'},
+  {section:'Prompt Library', title:'Feature planning template', snippet:'Force plan with trade-offs before any code is generated.', anchor:'prompts'},
+  {section:'Case Study', title:'Optimizing the Report module', snippet:'Grand total / detail separation, lazy loading, pagination.', anchor:'casestudy'},
+  {section:'Case Study', title:'Junior dev maps Account module', snippet:'AI as onboarding tool — senior time from 2hrs to 5min review.', anchor:'casestudy'},
+  {section:'Do & Don\'t', title:'Check custom/ before Sugar changes', snippet:'AI suggests standard Sugar logic — may conflict with overrides.', anchor:'dodo'},
+  {section:'Do & Don\'t', title:'No credentials in prompts', snippet:'Never paste API keys, DB strings, or customer data into AI.', anchor:'dodo'},
+  {section:'Do & Don\'t', title:'EXPLAIN every AI-generated SQL', snippet:'Dev data != production data. Verify query plans before deploying.', anchor:'dodo'},
+  {section:'Tools', title:'Cursor — for coding', snippet:'Codebase-aware. Use for debugging, refactoring, generating code.', anchor:'tools'},
+  {section:'Tools', title:'Claude — for planning', snippet:'Long context. Best for multi-step plans and documentation.', anchor:'tools'},
+  {section:'Tools', title:'ChatGPT — for brainstorming', snippet:'Quick option exploration. Familiar. Use before committing to Cursor.', anchor:'tools'},
+  {section:'Failure Patterns', title:'AI suggested outdated Sugar API', snippet:'Knowledge cutoff. Verify API usage against your actual codebase.', anchor:'fails'},
+  {section:'Failure Patterns', title:'Refactor changed more than asked', snippet:'Scope prompts explicitly. Ask "what else did you change?"', anchor:'fails'},
+  {section:'Failure Patterns', title:'SQL correct on dev, fails on prod', snippet:'Run EXPLAIN. Tell AI expected row count upfront.', anchor:'fails'},
+  {section:'Keywords', title:'Prompt Engineering', snippet:'Structuring AI inputs for better outputs. Most of this handbook.', anchor:'keywords'},
+  {section:'Keywords', title:'Hallucination', snippet:'AI generates confident but incorrect info. High risk with APIs.', anchor:'keywords'},
+  {section:'Keywords', title:'Context Window', snippet:'Max text AI can see at once. Claude has one of the largest.', anchor:'keywords'},
+  {section:'Keywords', title:'RAG — Retrieval-Augmented Generation', snippet:'How Cursor reads your files to add to AI context.', anchor:'keywords'},
+  {section:'Keywords', title:'SugarCRM Logic Hooks', snippet:'PHP event callbacks. Tell AI which hooks exist before it edits.', anchor:'keywords'},
+  {section:'Keywords', title:'Chain-of-Thought prompting', snippet:'Ask AI to think step by step. Improves complex output quality.', anchor:'keywords'},
+  {section:'Verification', title:'Verification checklist', snippet:'18-item checklist. Run before shipping any AI-assisted code.', anchor:'verify'},
+];
+
+function handleSearch(val){
+  const v = val.trim().toLowerCase();
+  const sr = document.getElementById('search-results');
+  if(!v){ sr.classList.remove('visible'); return; }
+  sr.classList.add('visible');
+  const results = searchData.filter(d =>
+    d.title.toLowerCase().includes(v) ||
+    d.snippet.toLowerCase().includes(v) ||
+    d.section.toLowerCase().includes(v)
+  );
+  document.getElementById('sr-title').textContent = results.length + ' result' + (results.length !== 1 ? 's' : '') + ' for "' + val + '"';
+  const list = document.getElementById('sr-list');
+  if(!results.length){
+    list.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:20px 0">No results found. Try different keywords.</div>';
+    return;
+  }
+  list.innerHTML = results.map(r => `
+    <div class="sr-item" onclick="gotoSection('${r.anchor}')">
+      <div class="sr-item-section">${r.section}</div>
+      <div class="sr-item-title">${highlight(r.title, v)}</div>
+      <div class="sr-item-snippet">${highlight(r.snippet, v)}</div>
+    </div>
+  `).join('');
+}
+
+function highlight(text, query){
+  if(!query) return text;
+  const regex = new RegExp('('+query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')', 'gi');
+  return text.replace(regex, '<mark>$1</mark>');
+}
+
+function gotoSection(anchor){
+  closeSearch();
+  setTimeout(()=>{ scrollToSection(anchor); }, 100);
+}
+
+function closeSearch(){
+  document.getElementById('search-results').classList.remove('visible');
+  document.getElementById('sideSearch').value = '';
+}
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') closeSearch();
+});
+
+// ── FADE IN OBSERVER ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.05 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
